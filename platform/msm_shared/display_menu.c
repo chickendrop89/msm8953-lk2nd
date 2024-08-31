@@ -420,10 +420,10 @@ void display_bootverify_option_menu_renew(struct select_msg_info *msg_info)
 
 	#ifdef VOL_DOWN_KEY_IS_PWR_KEY
 		display_fbcon_menu_message("Press volume UP key to select, and "\
-			"volume DOWN to select\n\n", FBCON_COMMON_MSG, common_factor);
+			"volume DOWN to confirm\n\n", FBCON_COMMON_MSG, common_factor);
 	#else
 		display_fbcon_menu_message("Press volume key to select, and "\
-			"press power key to select\n\n", FBCON_COMMON_MSG, common_factor);
+			"press power key to confirm\n\n", FBCON_COMMON_MSG, common_factor);
 	#endif
 
 	for (i = 0; i < len; i++) {
@@ -484,10 +484,10 @@ void display_fastboot_menu_renew(struct select_msg_info *fastboot_msg_info)
 
 	#ifdef VOL_DOWN_KEY_IS_PWR_KEY
 		display_fbcon_menu_message("Press volume UP key to select, and "\
-			"volume DOWN to select\n\n", FBCON_COMMON_MSG, common_factor);
+			"volume DOWN to confirm\n\n", FBCON_COMMON_MSG, common_factor);
 	#else
 		display_fbcon_menu_message("\n\nPress volume key to select, and "\
-			"press power key to select\n\n", FBCON_COMMON_MSG, common_factor);
+			"press power key to confirm\n\n", FBCON_COMMON_MSG, common_factor);
 	#endif
 
 	display_fbcon_menu_message("FASTBOOT MODE\n", FBCON_RED_MSG, common_factor);
