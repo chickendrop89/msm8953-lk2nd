@@ -38,6 +38,10 @@
 #include <platform/timer.h>
 #include <pm_vib.h>
 
+#ifdef VOL_DOWN_KEY_IS_PWR_KEY
+	bool pwr_key_is_pressed;
+#endif
+
 #define QPNP_VIB_EN    BIT(7)
 
 /* Enable LN BB CLK */
@@ -382,14 +386,18 @@ uint32_t pm8x41_resin_status()
 /* Return 1 if power key is pressed */
 uint32_t pm8x41_get_pwrkey_is_pressed()
 {
-	uint8_t pwr_sts = 0;
+	#ifdef VOL_DOWN_KEY_IS_PWR_KEY
+		return pwr_key_is_pressed;
+	#else
+		uint8_t pwr_sts = 0;
 
-	pwr_sts = REG_READ(PON_INT_RT_STS);
+		pwr_sts = REG_READ(PON_INT_RT_STS);
 
-	if (pwr_sts & BIT(KPDPWR_ON_INT_BIT))
-		return 1;
-	else
-		return 0;
+		if (pwr_sts & BIT(KPDPWR_ON_INT_BIT))
+			return 1;
+		else
+			return 0;
+	#endif
 }
 
 void pmi632_reset_configure(uint8_t reset_type)

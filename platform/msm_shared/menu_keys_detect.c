@@ -210,26 +210,6 @@ static void menu_volume_up_func (struct select_msg_info* msg_info)
 	}
 }
 
-/* update select option's background when volume down key is pressed */
-static void menu_volume_down_func (struct select_msg_info* msg_info)
-{
-	msg_info->info.option_index++;
-	if (msg_info->info.option_index >= msg_info->info.option_num)
-		msg_info->info.option_index = 0;
-
-	if (msg_info->info.msg_type == DISPLAY_MENU_FASTBOOT) {
-		display_fastboot_menu_renew(msg_info);
-	} else {
-		update_volume_down_bg(msg_info);
-	}
-}
-
-/* enter to boot verification option page if volume key is pressed */
-static void boot_warning_volume_keys_func (struct select_msg_info* msg_info)
-{
-	msg_info->last_msg_type = msg_info->info.msg_type;
-	display_bootverify_option_menu_renew(msg_info);
-}
 
 /* update device's status via select option */
 static void power_key_func(struct select_msg_info* msg_info)
@@ -237,39 +217,64 @@ static void power_key_func(struct select_msg_info* msg_info)
 	int reason = -1;
 
 	switch (msg_info->info.msg_type) {
-		case DISPLAY_MENU_YELLOW:
-		case DISPLAY_MENU_ORANGE:
-		case DISPLAY_MENU_RED:
-		case DISPLAY_MENU_LOGGING:
-			reason = CONTINUE;
-			break;
-		case DISPLAY_MENU_EIO:
+	case DISPLAY_MENU_YELLOW:
+	case DISPLAY_MENU_ORANGE:
+	case DISPLAY_MENU_RED:
+	case DISPLAY_MENU_LOGGING:
+		reason = CONTINUE;
+		break;
+	case DISPLAY_MENU_EIO:
 			pwr_key_is_pressed = true;
-			reason = CONTINUE;
-			break;
-		case DISPLAY_MENU_MORE_OPTION:
+		reason = CONTINUE;
+		break;
+	case DISPLAY_MENU_MORE_OPTION:
 			if(msg_info->info.option_index < ARRAY_SIZE(verify_index_action))
-				reason = verify_index_action[msg_info->info.option_index];
-			break;
-		case DISPLAY_MENU_UNLOCK:
-		case DISPLAY_MENU_UNLOCK_CRITICAL:
-		case DISPLAY_MENU_LOCK:
-		case DISPLAY_MENU_LOCK_CRITICAL:
+			reason = verify_index_action[msg_info->info.option_index];
+		break;
+	case DISPLAY_MENU_UNLOCK:
+	case DISPLAY_MENU_UNLOCK_CRITICAL:
+	case DISPLAY_MENU_LOCK:
+	case DISPLAY_MENU_LOCK_CRITICAL:
 			if(msg_info->info.option_index < ARRAY_SIZE(unlock_index_action))
-				reason = unlock_index_action[msg_info->info.option_index];
-			break;
-		case DISPLAY_MENU_FASTBOOT:
+			reason = unlock_index_action[msg_info->info.option_index];
+		break;
+	case DISPLAY_MENU_FASTBOOT:
 			if(msg_info->info.option_index < ARRAY_SIZE(fastboot_index_action))
-				reason = fastboot_index_action[msg_info->info.option_index];
-			break;
-		default:
+			reason = fastboot_index_action[msg_info->info.option_index];
+		break;
+	default:
 			dprintf(CRITICAL,"Unsupported menu type\n");
-			break;
+		break;
 	}
 
 	if (reason != -1) {
 		update_device_status(msg_info, reason);
 	}
+}
+
+/* update select option's background when volume down key is pressed */
+static void menu_volume_down_func(struct select_msg_info *msg_info)
+{
+	#ifdef VOL_DOWN_KEY_IS_PWR_KEY
+		power_key_func;
+	#else
+		msg_info->info.option_index++;
+		if (msg_info->info.option_index >= msg_info->info.option_num)
+			msg_info->info.option_index = 0;
+
+		if (msg_info->info.msg_type == DISPLAY_MENU_FASTBOOT) {
+			display_fastboot_menu_renew(msg_info);
+		} else {
+			update_volume_down_bg(msg_info);
+		}
+	#endif
+}
+
+/* enter to boot verification option page if volume key is pressed */
+static void boot_warning_volume_keys_func(struct select_msg_info *msg_info)
+{
+	msg_info->last_msg_type = msg_info->info.msg_type;
+	display_bootverify_option_menu_renew(msg_info);
 }
 
 /* Initialize different page's function
@@ -380,7 +385,11 @@ int select_msg_keys_detect(void *param) {
 			mutex_release(&msg_info->msg_lock);
 		} else if (is_key_pressed(VOLUME_DOWN)) {
 			mutex_acquire(&msg_info->msg_lock);
-			menu_pages_action[msg_info->info.msg_type].down_action_func(msg_info);
+			#ifdef VOL_DOWN_KEY_IS_PWR_KEY
+				menu_pages_action[msg_info->info.msg_type].enter_action_func(msg_info);
+			#else
+				menu_pages_action[msg_info->info.msg_type].down_action_func(msg_info);
+			#endif
 			mutex_release(&msg_info->msg_lock);
 		} else if (is_key_pressed(POWER_KEY)) {
 			mutex_acquire(&msg_info->msg_lock);

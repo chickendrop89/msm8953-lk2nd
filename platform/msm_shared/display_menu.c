@@ -44,6 +44,21 @@
 #include <../../../app/aboot/recovery.h>
 #include <../../../app/aboot/lk2nd-device.h>
 
+#ifdef VOL_DOWN_KEY_IS_PWR_KEY
+	#define unlock_menu_common_msg_keys \
+		"Press the Volume UP to select whether to unlock the bootloader, " \
+		"then Volume DOWN to continue.\n\n";
+	#define lock_menu_common_msg_keys \
+		"Press the Volume UP to select whether to " \
+		"lock the bootloader, then volume DOWN button to continue.\n\n";
+#else
+	#define unlock_menu_common_msg_keys \
+		"Press the Volume keys to select whether to unlock the bootloader, " \
+		"then the Power Button to continue.\n\n";
+	#define lock_menu_common_msg_keys \
+		"Press the Volume keys to select whether to " \
+		"lock the bootloader, then the power button to continue.\n\n";
+#endif
 
 static const char *unlock_menu_common_msg = "By unlocking the bootloader, you will be able to install "\
 				"custom operating system on this phone. "\
@@ -56,8 +71,7 @@ static const char *unlock_menu_common_msg = "By unlocking the bootloader, you wi
 				"To prevent unauthorized access to your personal data, "\
 				"unlocking the bootloader will also delete all personal "\
 				"data on your phone.\n\n"\
-				"Press the Volume keys to select whether to unlock the bootloader, "\
-				"then the Power Button to continue.\n\n";
+				unlock_menu_common_msg_keys;
 
 static const char *lock_menu_common_msg = "If you lock the bootloader, "\
 				"you will not be able to install "\
@@ -65,8 +79,7 @@ static const char *lock_menu_common_msg = "If you lock the bootloader, "\
 				"To prevent unauthorized access to your personal data, "\
 				"locking the bootloader will also delete all personal "\
 				"data on your phone.\n\n"\
-				"Press the Volume keys to select whether to "\
-				"lock the bootloader, then the power button to continue.\n\n";
+				lock_menu_common_msg_keys;
 
 #define YELLOW_WARNING_MSG	"Your device has loaded a different operating system\n\n "\
 				"Visit this link on another device:\n"
@@ -404,8 +417,14 @@ void display_bootverify_option_menu_renew(struct select_msg_info *msg_info)
 	len = ARRAY_SIZE(verify_option_menu);
 	display_fbcon_menu_message("Options menu:\n\n",
 		FBCON_COMMON_MSG, big_factor);
-	display_fbcon_menu_message("Press volume key to select, and "\
-		"press power key to select\n\n", FBCON_COMMON_MSG, common_factor);
+
+	#ifdef VOL_DOWN_KEY_IS_PWR_KEY
+		display_fbcon_menu_message("Press volume UP key to select, and "\
+			"volume DOWN to select\n\n", FBCON_COMMON_MSG, common_factor);
+	#else
+		display_fbcon_menu_message("Press volume key to select, and "\
+			"press power key to select\n\n", FBCON_COMMON_MSG, common_factor);
+	#endif
 
 	for (i = 0; i < len; i++) {
 		fbcon_draw_line(FBCON_COMMON_MSG);
@@ -462,8 +481,14 @@ void display_fastboot_menu_renew(struct select_msg_info *fastboot_msg_info)
 	display_fbcon_menu_message(fastboot_option_menu[option_index],
 		msg_type, big_factor);
 	fbcon_draw_line(msg_type);
-	display_fbcon_menu_message("\n\nPress volume key to select, and "\
-		"press power key to select\n\n", FBCON_COMMON_MSG, common_factor);
+
+	#ifdef VOL_DOWN_KEY_IS_PWR_KEY
+		display_fbcon_menu_message("Press volume UP key to select, and "\
+			"volume DOWN to select\n\n", FBCON_COMMON_MSG, common_factor);
+	#else
+		display_fbcon_menu_message("\n\nPress volume key to select, and "\
+			"press power key to select\n\n", FBCON_COMMON_MSG, common_factor);
+	#endif
 
 	display_fbcon_menu_message("FASTBOOT MODE\n", FBCON_RED_MSG, common_factor);
 
